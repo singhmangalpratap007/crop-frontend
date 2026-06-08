@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { ResultCard } from "./result-card"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface FormData {
   nitrogen: string
@@ -27,6 +28,7 @@ interface PredictionResult {
 }
 
 export function CropRecommendationForm() {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState<FormData>({
     nitrogen: "",
     phosphorus: "",
@@ -48,20 +50,20 @@ export function CropRecommendationForm() {
 
     Object.entries(formData).forEach(([key, value]) => {
       if (!value.trim()) {
-        newErrors[key as keyof FormData] = "This field is required"
+        newErrors[key as keyof FormData] = t("form.required")
         isValid = false
       } else {
         const numValue = Number.parseFloat(value)
         if (isNaN(numValue)) {
-          newErrors[key as keyof FormData] = "Please enter a valid number"
+          newErrors[key as keyof FormData] = t("form.invalidNumber")
           isValid = false
         }
         if (key === "humidity" && (numValue < 0 || numValue > 100)) {
-          newErrors[key as keyof FormData] = "Humidity must be between 0-100%"
+          newErrors[key as keyof FormData] = t("form.humidityRange")
           isValid = false
         }
         if (key === "ph" && (numValue < 0 || numValue > 14)) {
-          newErrors[key as keyof FormData] = "pH must be between 0-14"
+          newErrors[key as keyof FormData] = t("form.phRange")
           isValid = false
         }
       }
@@ -84,8 +86,8 @@ export function CropRecommendationForm() {
 
     if (!validateForm()) {
       toast({
-        title: "Validation Error",
-        description: "Please fill all fields correctly",
+        title: t("form.validationError"),
+        description: t("form.validationErrorDesc"),
         variant: "destructive",
       })
       return
@@ -113,13 +115,13 @@ export function CropRecommendationForm() {
       setResult(data)
 
       toast({
-        title: "Success",
-        description: "Crop prediction completed",
+        title: t("form.predictionSuccess"),
+        description: t("form.predictionSuccessDesc"),
       })
-    } catch (error) {
+    } catch {
       toast({
-        title: "Error",
-        description: "Failed to get prediction. Please try again.",
+        title: t("form.predictionError"),
+        description: t("form.predictionErrorDesc"),
         variant: "destructive",
       })
     } finally {
@@ -145,89 +147,37 @@ export function CropRecommendationForm() {
     <div className="w-full max-w-2xl space-y-8">
       <Card className="w-full shadow-lg">
         <CardHeader className="bg-primary text-primary-foreground rounded-t-lg">
-          <CardTitle className="text-2xl">Crop Recommendation Form</CardTitle>
-          <CardDescription className="text-primary-foreground/80">
-            Enter your soil and weather conditions to get crop recommendations
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("form.title")}</CardTitle>
+          <CardDescription className="text-primary-foreground/80">{t("form.description")}</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Soil Nutrients Section */}
+            {/* Soil Nutrients */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg text-foreground">Soil Nutrients</h3>
+              <h3 className="font-semibold text-lg text-foreground">{t("form.soilNutrients")}</h3>
               <div className="grid md:grid-cols-3 gap-4">
-                <FormField
-                  label="Nitrogen (N)"
-                  name="nitrogen"
-                  value={formData.nitrogen}
-                  onChange={handleChange}
-                  error={errors.nitrogen}
-                  placeholder="kg/ha"
-                />
-                <FormField
-                  label="Phosphorus (P)"
-                  name="phosphorus"
-                  value={formData.phosphorus}
-                  onChange={handleChange}
-                  error={errors.phosphorus}
-                  placeholder="kg/ha"
-                />
-                <FormField
-                  label="Potassium (K)"
-                  name="potassium"
-                  value={formData.potassium}
-                  onChange={handleChange}
-                  error={errors.potassium}
-                  placeholder="kg/ha"
-                />
+                <FormField label={t("form.nitrogen")} name="nitrogen" value={formData.nitrogen} onChange={handleChange} error={errors.nitrogen} placeholder={t("form.nitrogenPlaceholder")} />
+                <FormField label={t("form.phosphorus")} name="phosphorus" value={formData.phosphorus} onChange={handleChange} error={errors.phosphorus} placeholder={t("form.phosphorusPlaceholder")} />
+                <FormField label={t("form.potassium")} name="potassium" value={formData.potassium} onChange={handleChange} error={errors.potassium} placeholder={t("form.potassiumPlaceholder")} />
               </div>
             </div>
 
-            {/* Weather Conditions Section */}
+            {/* Weather Conditions */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg text-foreground">Weather Conditions</h3>
+              <h3 className="font-semibold text-lg text-foreground">{t("form.weatherConditions")}</h3>
               <div className="grid md:grid-cols-3 gap-4">
-                <FormField
-                  label="Temperature"
-                  name="temperature"
-                  value={formData.temperature}
-                  onChange={handleChange}
-                  error={errors.temperature}
-                  placeholder="°C"
-                />
-                <FormField
-                  label="Humidity"
-                  name="humidity"
-                  value={formData.humidity}
-                  onChange={handleChange}
-                  error={errors.humidity}
-                  placeholder="%"
-                />
-                <FormField
-                  label="Rainfall"
-                  name="rainfall"
-                  value={formData.rainfall}
-                  onChange={handleChange}
-                  error={errors.rainfall}
-                  placeholder="mm"
-                />
+                <FormField label={t("form.temperature")} name="temperature" value={formData.temperature} onChange={handleChange} error={errors.temperature} placeholder={t("form.temperaturePlaceholder")} />
+                <FormField label={t("form.humidity")} name="humidity" value={formData.humidity} onChange={handleChange} error={errors.humidity} placeholder={t("form.humidityPlaceholder")} />
+                <FormField label={t("form.rainfall")} name="rainfall" value={formData.rainfall} onChange={handleChange} error={errors.rainfall} placeholder={t("form.rainfallPlaceholder")} />
               </div>
             </div>
 
-            {/* Soil pH Section */}
+            {/* Soil Properties */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg text-foreground">Soil Properties</h3>
-              <FormField
-                label="Soil pH"
-                name="ph"
-                value={formData.ph}
-                onChange={handleChange}
-                error={errors.ph}
-                placeholder="0-14"
-              />
+              <h3 className="font-semibold text-lg text-foreground">{t("form.soilProperties")}</h3>
+              <FormField label={t("form.ph")} name="ph" value={formData.ph} onChange={handleChange} error={errors.ph} placeholder={t("form.phPlaceholder")} />
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={loading}
@@ -236,10 +186,10 @@ export function CropRecommendationForm() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Predicting...
+                  {t("form.predicting")}
                 </>
               ) : (
-                "Predict Suitable Crop"
+                t("form.predict")
               )}
             </Button>
           </form>
@@ -252,7 +202,7 @@ export function CropRecommendationForm() {
             result={result}
             onReset={() => {
               setResult(null)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
+              window.scrollTo({ top: 0, behavior: "smooth" })
             }}
             onSave={handleSave}
           />
